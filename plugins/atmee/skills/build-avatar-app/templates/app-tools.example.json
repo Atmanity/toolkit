@@ -1,0 +1,23 @@
+{
+  "instructions": "When you teach a lesson slide, put it on the user's screen first with show_slide. When the user asks for their score, get it with get_score and tell them.",
+  "tools": [
+    {
+      "type": "function",
+      "name": "show_slide",
+      "description": "Put lesson slide n on the user's screen.",
+      "parameters": {
+        "type": "object",
+        "properties": { "n": { "type": "integer", "minimum": 1 } },
+        "required": ["n"]
+      },
+      "x-atmee": { "mode": "notify" }
+    },
+    {
+      "type": "function",
+      "name": "get_score",
+      "description": "Get the user's quiz score so far, to tell them.",
+      "parameters": { "type": "object", "properties": {} },
+      "x-atmee": { "mode": "await", "timeoutSeconds": 8 }
+    }
+  ]
+}

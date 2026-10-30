@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# atmee-setup: the local half of the setup skill's checks. Run from the project
+# folder. Prints one line per check, "<ok|fix|info> <check> <message>", for
+# Claude to read.
+set -u
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+plugin="$(cd "$here/.." && pwd)"
+plugins_root="${CLAUDE_CODE_PLUGIN_CACHE_DIR:-$HOME/.claude/plugins}"
+# Claude Code permission rules that cover every tool of the plugin's server.
+TOOL_RULES=("mcp__plugin_atmee_atmee-avatars")
+
+say() { printf '%s %s %s\n' "$1" "$2" "$3"; }
+
+# The "version" field of a plugin.json, without needing Node or jq.
+version_of() {
+  sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1" 2>/dev/null | head -n 1
+}
+
+# True when dotted version $1 is older than $2.
+older() {
+  [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -t. -k1,1n -k2,2n -k3,3n | head -n 1)" = "$1" ]
+}
+
+check_version() {
+  local mine latest="" market manifest
+  mine="$(version_of "$plugin/.claude-plugin/plugin.json")"
+  if [ -z "$mine" ]; then
+    say info plugin "installed plugin has no version number"
+    return
+  fi
+  # Claude Code keeps a git clone of the marketplace but only refreshes it on
+  # request, so fetch it (never prompting for credentials) and read the
+  # plugin.json there; fall back to the clone as it is.
+  market="$plugins_root/marketplaces/atmee"
+  manifest="plugins/atmee/.claude-plugin/plugin.json"
+  if [ -d "$market/.git" ] && GIT_TERMINAL_PROMPT=0 git -C "$market" fetch -q origin 2>/dev/null; then
+    latest="$(git -C "$market" show "origin/HEAD:$manifest" 2>/dev/null | version_of /dev/stdin)"
+  fi
+  [ -z "$latest" ] && [ -f "$market/$manifest" ] && latest="$(version_of "$market/$manifest")"
+  case "$plugin" in
+    "$plugins_root/"*) ;;
+    *)
+      say info plugin "version $mine, loaded from a local folder ($plugin); update it with git there"
+      return
+      ;;
+  esac
+  if [ -z "$latest" ]; then
+    say ok plugin "version $mine"
+  elif older "$mine" "$latest"; then
+    say fix plugin "version $mine is installed and $latest is out: run /plugin marketplace update atmee, update atmee under Installed in /plugin, then /reload-plugins"
+  else
+    say ok plugin "version $mine (latest)"
+  fi
+}
+
+# A skill's allowed-tools last only until the creator's next message, so
+# without these rules Claude Code asks before atmee tool calls in later turns.
+# Any mention of a rule counts: an allow, ask or deny entry is a choice made.
+check_permissions() {
+  local settings="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json" rule missing=""
+  for rule in "${TOOL_RULES[@]}"; do
+    [ -f "$settings" ] && grep -qF "\"$rule\"" "$settings" || missing="$missing $rule"
+  done
+  if [ -z "$missing" ]; then
+    say ok permissions "$settings has rules for atmee's tools"
+  elif grep -qE '"keepToolPrompts"[[:space:]]*:[[:space:]]*true' atmee-avatars/settings.json 2>/dev/null; then
+    say info permissions "the creator chose to keep Claude Code's prompts (keepToolPrompts in atmee-avatars/settings.json)"
+  else
+    say fix permissions "Claude Code asks before atmee tool calls; to stop it, add to permissions.allow in $settings:$missing"
+  fi
+}
+
+case "${1:-}" in
+  "")
+    check_version
+    check_permissions
+    ;;
+  *)
+    echo "usage: atmee-setup" >&2
+    exit 2
+    ;;
+esac

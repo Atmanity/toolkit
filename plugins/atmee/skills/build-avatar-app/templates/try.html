@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar try page</title>
+<!-- A first live test of the app's loop: join, set state, send an event, type a turn, drop files, read captions,
+     answer tool calls (start server.mjs with APP_TOOLS_FILE=app-tools.example.json to declare them), end. -->
+<script type="importmap">{ "imports": { "livekit-client": "https://cdn.jsdelivr.net/npm/livekit-client@2.22.3/+esm" } }</script>
+<style>
+  body { font: 15px/1.4 system-ui, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; }
+  #stage { position: relative; border-radius: 12px; }
+  video { display: block; width: 100%; aspect-ratio: 1; background: #111; border-radius: 12px; object-fit: cover; }
+  /* Over the video, not instead of it: a hidden video may not play, and its playing is what reveals it. */
+  #novideo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #bbb; background: #111; border-radius: 12px; }
+  #novideo[hidden] { display: none; }
+  form { display: flex; gap: 8px; margin: 8px 0; }
+  input[type=text] { flex: 1; padding: 6px 8px; }
+  #caption { min-height: 2.8em; font-weight: 600; }
+  #log, #calls { font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+  #slide { display: inline-block; padding: 6px 12px; border: 1px solid #999; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div id="stage"><video id="video"></video><div id="novideo">Voice only — no video yet</div></div>
+<audio id="audio" autoplay></audio>
+<p id="phase">Not connected.</p>
+<p id="caption"></p>
+<p><label><input type="checkbox" id="useMic"> Use my microphone</label> <button id="start">Start</button> <button id="end" disabled>End</button> <button id="hear" hidden>Tap to hear the avatar</button></p>
+<form data-send="say"><input type="text" placeholder="Type a turn the avatar answers"><button>Say</button></form>
+<form data-send="state"><input type="text" placeholder="App state: what is true now"><button>Set state</button></form>
+<form data-send="event"><input type="text" placeholder="An event for the avatar to comment on"><button>Send event</button></form>
+<form id="drop"><input type="file" multiple accept="image/*,application/pdf,text/*,audio/*,video/*,.json,.srt,.md,.csv"><input type="text" placeholder="Caption (optional)"><button>Send files</button></form>
+<p><span id="slide">Slide: none</span></p>
+<p>Tool calls (from the avatar):</p>
+<div id="calls">none yet</div>
+<div id="log"></div>
+<script type="module">
+  import { joinAvatar } from './avatar-room.js';
+  const $ = (id) => document.getElementById(id);
+  const log = (line) => { $('log').textContent += `${new Date().toLocaleTimeString()} ${line}\n`; };
+  const stopped = (text) => {
+    $('phase').textContent = text;
+    log(text);
+    $('start').disabled = false;
+    $('end').disabled = true;
+  };
+  let avatar;
+
+  // Answers for the tools in app-tools.example.json. With no tools declared the
+  // avatar never calls them.
+  const call = (name, args) => {
+    const line = `${new Date().toLocaleTimeString()} ${name} ${JSON.stringify(args)}`;
+    $('calls').textContent = $('calls').textContent === 'none yet' ? line : `${$('calls').textContent}\n${line}`;
+    log(`tool ${name} ${JSON.stringify(args)}`);
+  };
+  const tools = {
+    show_slide: (args) => { call('show_slide', args); $('slide').textContent = `Slide: ${args.n}`; },
+    get_score: (args) => { call('get_score', args); return { score: 4173, outOf: 5000 }; },
+  };
+
+  $('start').onclick = async () => {
+    $('start').disabled = true;
+    try {
+      let mic = null;
+      if ($('useMic').checked) {
+        try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+        catch (err) { log(`no microphone (${err.name}): typing only`); }
+      }
+      avatar = await joinAvatar({
+        video: $('video'), audio: $('audio'), mic, tools,
+        onPhase: (phase, detail) => { $('phase').textContent = `${phase} ${JSON.stringify(detail || {})}`; log(`phase ${phase}`); },
+        onCaption: (text, done) => { $('caption').textContent = text; if (done) log(`avatar: ${text}`); },
+        onSpeaking: (on) => { $('stage').style.outline = on ? '3px solid #3a7' : 'none'; },
+        // The session is live once the avatar can talk; its face may come later, or never.
+        onVideo: (on) => { $('novideo').hidden = on; log(on ? 'video playing' : 'video gone'); },
+        onAudioBlocked: (blocked, resume) => { $('hear').hidden = !blocked; $('hear').onclick = async () => { await resume(); $('hear').hidden = true; }; },
+        onEnd: (reason) => stopped(`ended (${reason})`),
+      });
+      $('end').disabled = false;
+      window.avatar = avatar; // to poke at from the devtools console
+      log(`session ${avatar.session.sessionId}`);
+      log(avatar.acceptsFiles() ? 'the avatar takes files' : 'the avatar takes no files (an older runtime)');
+    } catch (err) {
+      stopped(`failed: ${err.code} ${err.message}`);
+    }
+  };
+  $('end').onclick = () => avatar && avatar.end();
+
+  // A drop: each file's answers in the log, then the outcome. sendFiles copies
+  // the list, so the picker can be cleared at once.
+  $('drop').onsubmit = async (e) => {
+    e.preventDefault();
+    const [picker, caption] = $('drop').querySelectorAll('input');
+    if (!avatar || !picker.files.length) return;
+    const onStatus = ({ index, name, status, reason }) => log(`file ${index} ${name}: ${status}${reason ? ` (${reason})` : ''}`);
+    const drop = avatar.sendFiles(picker.files, { caption: caption.value.trim() || undefined, onStatus });
+    picker.value = caption.value = '';
+    try { log(`files: ${JSON.stringify(await drop)}`); }
+    catch (err) { log(`files failed: ${err.code} ${err.message}`); }
+  };
+
+  for (const form of document.querySelectorAll('form[data-send]')) {
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const input = form.querySelector('input');
+      const text = input.value.trim();
+      if (!avatar || !text) return;
+      const kind = form.dataset.send;
+      if (kind === 'say') await avatar.say(text);
+      else await avatar.app(kind === 'event' ? { type: 'event', text, ttl_s: 20 } : { type: 'state', text });
+      log(`${kind}: ${text}`);
+      input.value = '';
+    };
+  }
+</script>
+</body>
+</html>

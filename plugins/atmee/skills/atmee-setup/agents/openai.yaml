@@ -1,0 +1,14 @@
+interface:
+  display_name: 'Set up atmee'
+  short_description: 'Connect the atmee server and check sign-in, credits and updates'
+  icon_small: './assets/atmee-icon.svg'
+  icon_large: './assets/atmee-icon.svg'
+  brand_color: '#111114'
+  default_prompt: '$atmee-setup: Check that atmee is ready to make an avatar'
+dependencies:
+  tools:
+    - type: 'mcp'
+      value: 'atmee'
+      description: 'Atmee avatars, voices, uploads and live calls'
+      transport: 'streamable_http'
+      url: 'https://staging.atmanity.us/mcp'

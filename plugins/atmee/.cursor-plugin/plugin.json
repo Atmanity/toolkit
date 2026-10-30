@@ -1,0 +1,18 @@
+{
+  "name": "atmee",
+  "version": "0.10.4",
+  "description": "Create Atmee talking avatars with an agent: give a name, a photo and a voice, see it talk, then give it a character and test it, with portrait and voice generation; then build apps around them.",
+  "author": {
+    "name": "Atmanity"
+  },
+  "repository": "https://github.com/Atmanity/toolkit",
+  "license": "MIT",
+  "keywords": [
+    "avatar",
+    "digital twin",
+    "talking avatar",
+    "avatar app"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
+}

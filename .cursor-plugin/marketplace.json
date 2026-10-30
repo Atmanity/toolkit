@@ -1,0 +1,13 @@
+{
+  "name": "atmee",
+  "owner": {
+    "name": "Atmanity"
+  },
+  "plugins": [
+    {
+      "name": "atmee",
+      "source": "plugins/atmee",
+      "description": "Turn a rough idea into a tested, live Atmee talking avatar by talking to an agent, then build an app around it."
+    }
+  ]
+}

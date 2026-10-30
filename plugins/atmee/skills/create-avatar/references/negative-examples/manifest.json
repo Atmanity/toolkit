@@ -1,0 +1,398 @@
+{
+  "version": 1,
+  "about": "Negative examples only: what makes a portrait animate badly. Style is never a problem, and neither is framing: every example is made from one head-and-shoulders photo, but half-body and full-body shots pass too.",
+  "measure": {
+    "min_side": 512,
+    "formats": [
+      "jpeg",
+      "png",
+      "webp"
+    ],
+    "max_bytes": 10485760,
+    "aspect_borderline": 1.3
+  },
+  "examples": [
+    {
+      "id": "head-cut",
+      "file": "head-cut.jpg",
+      "group": "framing",
+      "problem": "Part of the head is cut off by the photo's edge",
+      "look_for": "Forehead, crown, chin or ears outside the frame",
+      "why_it_fails": "The engine animates what it is given; a missing part of the face can't be invented and the clip looks cropped",
+      "severity": "blocks",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with the whole head and some space above it",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: crop the base through the forehead (rows 334-1024)"
+    },
+    {
+      "id": "off-centre-landscape",
+      "file": "off-centre-landscape.jpg",
+      "group": "framing",
+      "problem": "The face sits near the edge of a wide photo",
+      "look_for": "A landscape photo with the face off-centre",
+      "why_it_fails": "The engine scales the short side to 512 and keeps only the centre square, so a face near the edge is cut or lost",
+      "severity": "blocks",
+      "detect": {
+        "by": "measure",
+        "check": "aspect",
+        "value": 1.3,
+        "then": "look"
+      },
+      "ask_creator": "Use a square photo, or one with the face in the middle",
+      "crop_result": "off-centre-landscape-cropped.jpg",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: base at the left edge of a 1600x900 landscape"
+    },
+    {
+      "id": "person-too-small",
+      "file": "person-too-small.jpg",
+      "group": "framing",
+      "problem": "The person is small in a large frame",
+      "look_for": "In the centre square, a face narrower than about a fifth of its width (half-body and full-body shots are fine when the face stays bigger than that)",
+      "why_it_fails": "The engine keeps the centre square at 512 px, so a small face ends up a few dozen pixels wide and loses its detail",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a closer photo, or one where your face takes up more of it",
+      "crop_result": "person-too-small-cropped.jpg",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: base scaled to 260 px on a 1600x900 canvas"
+    },
+    {
+      "id": "head-only",
+      "file": "head-only.jpg",
+      "group": "framing",
+      "problem": "Only the face, no hair outline or shoulders",
+      "look_for": "A face filling the whole frame",
+      "why_it_fails": "With no neck or shoulders the head floats, and head movement crops the face",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo that shows your head and shoulders",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: tight crop of the face only, no hair outline or shoulders"
+    },
+    {
+      "id": "tilted",
+      "file": "tilted.jpg",
+      "group": "framing",
+      "problem": "The head or camera is tilted",
+      "look_for": "Eyes not level, a slanted horizon or background",
+      "why_it_fails": "The avatar keeps the tilt for the whole conversation",
+      "severity": "may-work",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo taken straight on, with your head level",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: base rotated 20 degrees"
+    },
+    {
+      "id": "low-resolution",
+      "file": "low-resolution.jpg",
+      "group": "quality",
+      "problem": "The photo is too small or upscaled",
+      "look_for": "Fewer than 512 px on the short side, or visible blocks",
+      "why_it_fails": "The engine works at 512×512; a smaller or upscaled photo animates soft and smeared",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "measure",
+        "check": "min_side",
+        "value": 512
+      },
+      "ask_creator": "Use the original photo file, at least 512×512",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: base downscaled to 96 px and back up"
+    },
+    {
+      "id": "blurry",
+      "file": "blurry.jpg",
+      "group": "quality",
+      "problem": "The photo is out of focus or has motion blur",
+      "look_for": "Soft edges on the eyes and mouth",
+      "why_it_fails": "Lip sync needs a sharp mouth; blur becomes a smeared mouth",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a sharp photo; hold the camera still",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: gaussian blur, sigma 5"
+    },
+    {
+      "id": "heavy-compression",
+      "file": "heavy-compression.jpg",
+      "group": "quality",
+      "problem": "Heavy JPEG compression",
+      "look_for": "Blocky squares and colour smears, especially around the hair",
+      "why_it_fails": "Compression blocks around the mouth turn into flicker",
+      "severity": "may-work",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use the original photo, not one saved from a chat app or social media",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: JPEG at ffmpeg's worst quantiser (-q:v 31) twice, at 256 px then 384 px"
+    },
+    {
+      "id": "photo-of-screen",
+      "file": "photo-of-screen.jpg",
+      "group": "quality",
+      "problem": "A photo of a screen or a printed photo",
+      "look_for": "Moiré lines, a slanted frame, a colour cast or glare",
+      "why_it_fails": "The patterns and distortion animate along with the face",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use the original digital photo",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: keystone perspective, moire pattern and a blue cast"
+    },
+    {
+      "id": "overexposed",
+      "file": "overexposed.jpg",
+      "group": "light",
+      "problem": "The face is washed out",
+      "look_for": "No detail in the skin, eyes or lips",
+      "why_it_fails": "With no contrast around the mouth the engine can't track it",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo in even, softer light",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: brightness +0.38, contrast 0.65"
+    },
+    {
+      "id": "backlit",
+      "file": "backlit.jpg",
+      "group": "light",
+      "problem": "Backlit: a bright background and a dark face",
+      "look_for": "A silhouette, or a face much darker than what is behind it",
+      "why_it_fails": "The face has no detail to animate",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with the light in front of you, not behind",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: light neutral background pushed to near-white (face area excluded), the person darkened to 17 percent"
+    },
+    {
+      "id": "coloured-light",
+      "file": "coloured-light.jpg",
+      "group": "light",
+      "problem": "Strong coloured light",
+      "look_for": "Skin lit pink, blue or green, as on a stage",
+      "why_it_fails": "Colours carry into the avatar and look unnatural when it talks",
+      "severity": "may-work",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo in plain daylight or white light",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: magenta stage-light colour mix"
+    },
+    {
+      "id": "split-shadow",
+      "file": "split-shadow.jpg",
+      "group": "light",
+      "problem": "A hard shadow across the face",
+      "look_for": "One half of the face much darker than the other",
+      "why_it_fails": "The dark half animates poorly and the shadow doesn't move with the face",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with even light on both sides of your face",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: left half of the image darkened to 18 percent"
+    },
+    {
+      "id": "collage",
+      "file": "collage.jpg",
+      "group": "content",
+      "problem": "A collage, grid or before/after image",
+      "look_for": "More than one copy of the photo, panels or borders",
+      "why_it_fails": "The engine treats the whole image as one face",
+      "severity": "blocks",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a single photo",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: 2x2 grid of the base with flips and colour changes"
+    },
+    {
+      "id": "ar-stickers",
+      "file": "ar-stickers.jpg",
+      "group": "content",
+      "problem": "Filters or AR stickers on the face",
+      "look_for": "Cartoon ears, noses, sparkles, or skin smoothed by a beauty filter",
+      "why_it_fails": "Stickers don't move with the mouth and filters change the face",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use the photo without filters or stickers",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: cartoon ears, a pink nose and cheek dots painted over the face"
+    },
+    {
+      "id": "second-face",
+      "file": "second-face.jpg",
+      "group": "content",
+      "problem": "Another face in the photo",
+      "look_for": "A second person, a face on a poster or screen, a reflection",
+      "why_it_fails": "The engine has no idea which face is meant and may animate the wrong one",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with only you in it",
+      "made_by": "transform",
+      "source": "scripts/negative-examples/build.sh: a second generated face composited in the top-right corner"
+    },
+    {
+      "id": "hand-over-mouth",
+      "file": "hand-over-mouth.jpg",
+      "group": "mouth and face",
+      "problem": "Something covers the mouth",
+      "look_for": "A hand, cup, phone, mask or scarf over the lips or jaw",
+      "why_it_fails": "The mouth is what gets animated; a covered mouth smears or freezes",
+      "severity": "blocks",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo where nothing is in front of your mouth",
+      "made_by": "generated",
+      "source": "generate_portraits (gemini): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater, plain light grey background, with her hand raised covering her mouth"
+    },
+    {
+      "id": "microphone-at-mouth",
+      "file": "microphone-at-mouth.jpg",
+      "group": "mouth and face",
+      "problem": "An object in front of the chin or lips",
+      "look_for": "A microphone, pen or glass near the mouth",
+      "why_it_fails": "Objects near the mouth warp as the lips move",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with nothing near your mouth",
+      "made_by": "generated",
+      "source": "generate_portraits (openai): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater, plain light grey background, holding a handheld microphone right in front of her mouth"
+    },
+    {
+      "id": "hair-over-face",
+      "file": "hair-over-face.jpg",
+      "group": "mouth and face",
+      "problem": "Hair covers part of the face",
+      "look_for": "Hair across an eye, the cheek or the side of the mouth",
+      "why_it_fails": "Covered parts animate badly and hair smears when the head moves",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with your hair away from your face",
+      "made_by": "generated",
+      "source": "generate_portraits (gemini): an invented woman in her early 30s with long dark brown hair falling across her face and covering one eye and part of her cheek, wearing a plain teal crew-neck sweater, plain light grey background"
+    },
+    {
+      "id": "beard-over-lips",
+      "file": "beard-over-lips.jpg",
+      "group": "mouth and face",
+      "problem": "A beard or moustache hides the lips",
+      "look_for": "Upper or lower lip not visible",
+      "why_it_fails": "Without visible lips the mouth movement smears into the beard",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "If you can, use a photo where your lips are visible; otherwise try it, and judge the seeds carefully",
+      "made_by": "generated",
+      "source": "generate_portraits (novita): an invented man in his early 30s with a very thick, bushy full beard and a heavy moustache that completely covers his lips, wearing a plain teal crew-neck sweater, plain light grey background"
+    },
+    {
+      "id": "sunglasses-glare",
+      "file": "sunglasses-glare.jpg",
+      "group": "mouth and face",
+      "problem": "Sunglasses or glasses with strong glare",
+      "look_for": "Eyes not visible behind dark or mirrored lenses",
+      "why_it_fails": "Eyes can't blink or look around, so the avatar looks frozen",
+      "severity": "may-work",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo without sunglasses, or with clear glasses and no glare",
+      "made_by": "generated",
+      "source": "generate_portraits (openai): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater and dark mirrored sunglasses with a bright reflection, plain light grey background"
+    },
+    {
+      "id": "hat-shadow",
+      "file": "hat-shadow.jpg",
+      "group": "mouth and face",
+      "problem": "A hat shades the eyes",
+      "look_for": "The eyes in shadow under a brim",
+      "why_it_fails": "The shaded eyes can't blink or move naturally",
+      "severity": "may-work",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo without the hat, or with your eyes in the light",
+      "made_by": "generated",
+      "source": "generate_portraits (novita): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater and a wide-brimmed hat pulled low that casts a dark shadow over her eyes, plain light grey background"
+    },
+    {
+      "id": "laughing-mouth-wide",
+      "file": "laughing-mouth-wide.jpg",
+      "group": "pose and expression",
+      "problem": "A strong expression",
+      "look_for": "Mouth wide open, eyes squeezed shut, shouting",
+      "why_it_fails": "The avatar starts every clip from this face and can't relax out of it",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with a relaxed face and a slight smile",
+      "made_by": "generated",
+      "source": "generate_portraits (novita): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater, plain light grey background, laughing hard with her mouth wide open and eyes squeezed shut"
+    },
+    {
+      "id": "tongue-out",
+      "file": "tongue-out.jpg",
+      "group": "pose and expression",
+      "problem": "Tongue out or a pulled face",
+      "look_for": "The tongue or teeth in an unusual position",
+      "why_it_fails": "The mouth shape is baked in and lip sync can't close it",
+      "severity": "likely-fails",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo with a relaxed face and a slight smile",
+      "made_by": "generated",
+      "source": "generate_portraits (novita): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater, plain light grey background, playfully sticking her tongue out"
+    },
+    {
+      "id": "eyes-away",
+      "file": "eyes-away.jpg",
+      "group": "pose and expression",
+      "problem": "Eyes looking away from the camera",
+      "look_for": "Eyes turned to the side, up or down",
+      "why_it_fails": "The avatar never looks at the person it talks to",
+      "severity": "may-work",
+      "detect": {
+        "by": "look"
+      },
+      "ask_creator": "Use a photo where you look straight into the camera",
+      "made_by": "generated",
+      "source": "generate_portraits (novita): an invented woman in her early 30s with shoulder-length dark brown hair, wearing a plain teal crew-neck sweater, plain light grey background, her eyes looking far off to the side and up, not at the camera"
+    }
+  ]
+}

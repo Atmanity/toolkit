@@ -1,0 +1,14 @@
+interface:
+  display_name: 'Build an app with an Atmee avatar'
+  short_description: 'Put a live avatar in your app: sessions, app state, events, tools, agendas'
+  icon_small: './assets/atmee-icon.svg'
+  icon_large: './assets/atmee-icon.svg'
+  brand_color: '#111114'
+  default_prompt: '$build-avatar-app: Add my Atmee avatar to my website as a support agent'
+dependencies:
+  tools:
+    - type: 'mcp'
+      value: 'atmee'
+      description: 'Atmee avatars, API keys, sessions and agendas'
+      transport: 'streamable_http'
+      url: 'https://staging.atmanity.us/mcp'

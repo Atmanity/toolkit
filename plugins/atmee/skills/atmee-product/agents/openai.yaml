@@ -1,0 +1,14 @@
+interface:
+  display_name: 'What Atmee offers'
+  short_description: 'What Atmee offers and costs, and which path fits your idea'
+  icon_small: './assets/atmee-icon.svg'
+  icon_large: './assets/atmee-icon.svg'
+  brand_color: '#111114'
+  default_prompt: '$atmee-product: What can I build with Atmee, and what would it cost?'
+dependencies:
+  tools:
+    - type: 'mcp'
+      value: 'atmee'
+      description: 'Atmee avatars, the account, its plan, limits and prices'
+      transport: 'streamable_http'
+      url: 'https://staging.atmanity.us/mcp'

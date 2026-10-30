@@ -1,0 +1,14 @@
+interface:
+  display_name: 'Plan an Atmee avatar app'
+  short_description: 'Shape an avatar app idea into a brief before building it'
+  icon_small: './assets/atmee-icon.svg'
+  icon_large: './assets/atmee-icon.svg'
+  brand_color: '#111114'
+  default_prompt: '$plan-avatar-app: I want an avatar that helps customers at a pharmacy counter'
+dependencies:
+  tools:
+    - type: 'mcp'
+      value: 'atmee'
+      description: 'Atmee avatars, the account, its plan, limits and prices'
+      transport: 'streamable_http'
+      url: 'https://staging.atmanity.us/mcp'

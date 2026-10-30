@@ -1,0 +1,20 @@
+{
+  "name": "atmee",
+  "interface": {
+    "displayName": "atmee"
+  },
+  "plugins": [
+    {
+      "name": "atmee",
+      "source": {
+        "source": "local",
+        "path": "./plugins/atmee"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

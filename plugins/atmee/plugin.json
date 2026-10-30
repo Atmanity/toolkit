@@ -1,0 +1,37 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "atmee",
+  "version": "0.10.4",
+  "description": "Create Atmee talking avatars with an agent: give a name, a photo and a voice, see it talk, then give it a character and test it, with portrait and voice generation; then build apps around them.",
+  "author": {
+    "name": "Atmanity"
+  },
+  "repository": "https://github.com/Atmanity/toolkit",
+  "license": "MIT",
+  "keywords": [
+    "avatar",
+    "digital twin",
+    "talking avatar",
+    "avatar app"
+  ],
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/atmee-setup/SKILL.md",
+      "interface": {
+        "displayName": "atmee",
+        "shortDescription": "Build a talking avatar, and an app around it, by talking to an agent",
+        "developerName": "Atmanity",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "defaultPrompt": [
+          "Make me a talking avatar",
+          "Add my avatar to my app",
+          "Set up atmee"
+        ]
+      }
+    }
+  }
+}

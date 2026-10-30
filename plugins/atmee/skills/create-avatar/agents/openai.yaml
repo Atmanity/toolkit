@@ -1,0 +1,14 @@
+interface:
+  display_name: 'Create an Atmee avatar'
+  short_description: 'Build a talking avatar from a rough idea, then test it live'
+  icon_small: './assets/atmee-icon.svg'
+  icon_large: './assets/atmee-icon.svg'
+  brand_color: '#111114'
+  default_prompt: '$create-avatar: Make a talking avatar of me for my newsletter readers'
+dependencies:
+  tools:
+    - type: 'mcp'
+      value: 'atmee'
+      description: 'Atmee avatars, voices, uploads and live calls'
+      transport: 'streamable_http'
+      url: 'https://staging.atmanity.us/mcp'
