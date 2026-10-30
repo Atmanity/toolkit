@@ -4,7 +4,7 @@ step: create # create | candidate-selected | draft | grill-layer-1|2|3 | refine 
 applied: null # draft, grill, refine and update files: no when saved, yes once live on the avatar
 date: 2026-10-19
 environment: real # mock | real
-avatars_server: https://staging.atmanity.us/mcp
+avatars_server: https://api.atmanity.us/mcp
 avatar_id: null # set from the create step on
 real_person: null # null when not a real person; else { name: Jamie, permission: confirmed }
 assets:

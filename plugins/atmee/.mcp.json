@@ -2,7 +2,7 @@
   "mcpServers": {
     "atmee-avatars": {
       "type": "http",
-      "url": "https://staging.atmanity.us/mcp"
+      "url": "https://api.atmanity.us/mcp"
     }
   }
 }

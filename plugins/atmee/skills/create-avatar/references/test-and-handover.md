@@ -13,9 +13,7 @@ page, in the avatar's language) and `links.studio`. Give those. Only when
 the response has no `links`, build them:
 
 - **Chat page:** `https://<host>/avatars/<avatar id>?lang=<language>`, where
-  `<host>` is the website: `www.atmee.ai`, or `staging.taild36ab5.ts.net` (the
-  team's tailnet) for avatars on the plugin's staging servers, never the API
-  host `staging.atmanity.us`; and
+  `<host>` is the website `www.atmee.ai`, never the API host, and
   `<language>` is the avatar's language from step 1 (`zh-TW`, `ja`, …), so
   the call is in her language.
 - **Studio:** `https://<host>/studio/avatars/<avatar id>/edit`, where the

@@ -79,7 +79,7 @@ the creator asks to commit the avatar's folder:
 
 1. If the avatar is a real person, warn first that the files describe them.
 2. If the folder isn't in a git repository, ask before running `git init`.
-3. Keep `media/` out of git before staging anything: add
+3. Keep `media/` out of git before you `git add` anything: add
    `atmee-avatars/**/media/` to `.gitignore` if it isn't there. It holds the
    creator's photos and voices. If it was tracked before, untrack it with
    `git rm -r --cached`.

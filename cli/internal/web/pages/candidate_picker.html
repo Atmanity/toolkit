@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pick a candidate</title>
+<style>
+body{font-family:system-ui;max-width:1100px;margin:40px auto;padding:0 20px;background:#111;color:#eee}
+h1{font-size:1.5em;margin-bottom:4px}
+p.hint{color:#aaa;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:20px}
+.card{border:3px solid transparent;border-radius:12px;overflow:hidden;cursor:pointer;background:#1c1c1c;transition:border-color .2s}
+.card.selected{border-color:#4ade80}
+.card video{width:100%;display:block;background:#000}
+.meta{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-size:.9em}
+.actions{margin-top:24px;text-align:center;display:flex;gap:12px;justify-content:center}
+button{background:#4ade80;color:#111;border:none;padding:12px 32px;border-radius:8px;font-size:1em;cursor:pointer}
+button.secondary{background:#333;color:#eee}
+button:disabled{opacity:.4;cursor:default}
+</style>
+</head>
+<body>
+<h1>Pick a candidate</h1>
+<p class="hint">Each clip is the same image and voice, captured separately. Choose the one whose mouth follows the words and whose motion looks natural. Turn the sound on to judge lip sync.</p>
+<div class="grid" id="grid"></div>
+<div class="actions">
+  <button class="secondary" onclick="send({more:true})">None of these: try more</button>
+  <button id="confirm" disabled onclick="send({selected})">Use this candidate</button>
+</div>
+<script>
+const data=JSON.parse('__DATA__');
+let selected=null;
+const grid=document.getElementById('grid');
+data.items.forEach(s=>{
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`<video src="${s.url}" controls loop muted autoplay playsinline></video><div class="meta"><span>${s.label}</span></div>`;
+  card.onclick=e=>{
+    if(e.target.tagName==='VIDEO')return;
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    selected=s.id;
+    document.getElementById('confirm').disabled=false;
+  };
+  grid.appendChild(card);
+});
+function send(body){
+  fetch(location.href,{method:'POST',headers:{'Content-Type':'application/json','X-Atmee-Secret':'__SECRET__'},body:JSON.stringify(body)});
+  document.body.innerHTML='<h1 style="text-align:center;margin-top:100px">Done. You can close this tab.</h1>';
+}
+</script>
+</body>
+</html>

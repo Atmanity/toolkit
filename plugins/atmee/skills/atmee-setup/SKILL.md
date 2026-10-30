@@ -26,11 +26,9 @@ creator can also run it on its own.
 Keep it light: a creator who is ready should see one line, not a report. Run
 every check quietly first, then ask your questions, then say the result.
 
-Atmee runs on staging only, for now: the server is
-`https://staging.atmanity.us/mcp`, and anything else that reaches the Avatar
-API uses `ATMEE_BASE_URL=https://staging.atmanity.us`. The `atmee` CLI
-defaults to production, so export that before `atmee login` or any `atmee`
-command; a sign-in or key made against one server fails on the other.
+The atmee server is `https://api.atmanity.us/mcp`, and anything else
+that reaches the Avatar API uses `ATMEE_BASE_URL=https://api.atmanity.us`.
+A sign-in or key made against one server fails on any other.
 
 ## 0. Check for updates
 
@@ -45,8 +43,9 @@ it: what is already installed keeps working.
   are the creator's; the skills CLI command you may run after a yes.
 - **`cli` is `fix`:** ask in your question tool "Update the atmee CLI now?"
   with "Yes, update it (Recommended)" and "Not now", and on yes run the
-  printed install command (it downloads the release's `atmee` binary for this
-  machine).
+  printed install command (it builds the release's `atmee` from source with
+  Go; when `go` is missing, say the CLI needs Go from https://go.dev/dl and
+  go on without it).
 
 ## 1. Find the server
 
@@ -77,7 +76,7 @@ no portraits, voices, avatars or test calls. The creator can run this again
 any time. Stop here.
 
 **On yes:** add it under the name `atmee`, at
-`https://staging.atmanity.us/mcp`, with your agent's own way: run
+`https://api.atmanity.us/mcp`, with your agent's own way: run
 `scripts/detect-host` from this skill's folder and use the row it names
 (`claude-code …`, `codex`, `cursor …`); on `unknown` or another name, judge
 which row is yours. Before writing,

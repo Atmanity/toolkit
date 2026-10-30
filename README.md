@@ -45,21 +45,19 @@ Then ask your agent to make an avatar, or run `atmee-setup` first
 
 ## The `atmee` CLI
 
-The CLI manages avatars, API keys and sessions from a terminal or CI. Every
-release attaches it for macOS, Linux and Windows. Install the latest into
-`~/.local/bin`:
+The CLI manages avatars, API keys and sessions from a terminal or CI. Its
+source is in [`cli/`](cli). Install it with Go 1.21 or later (Go fetches the
+version the CLI needs):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Atmanity/toolkit/main/install.sh | sh
-# while the repo is members-only (curl answers 404), with a signed-in gh:
-# gh api repos/Atmanity/toolkit/contents/install.sh -H 'Accept: application/vnd.github.raw' | sh
-export ATMEE_BASE_URL=https://staging.atmanity.us   # while atmee runs on staging
+go install github.com/Atmanity/toolkit/cli/cmd/atmee@latest
 atmee login
 ```
 
-Set `ATMEE_INSTALL_DIR` to install somewhere else, or `ATMEE_VERSION=0.11.0`
-for a given release. On Windows, download `atmee_windows_amd64.zip` from the
-[latest release](https://github.com/Atmanity/toolkit/releases/latest).
+While this repo is members-only, run `gh auth setup-git` once and put
+`GOPRIVATE=github.com/Atmanity/toolkit` in front of `go install`. The binary
+lands in `$(go env GOPATH)/bin` (usually `~/go/bin`), which must be on your
+`PATH`. Run `go install` again to upgrade.
 Every command and flag: [docs/cli.md](docs/cli.md).
 
 ## Updates

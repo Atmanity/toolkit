@@ -2,7 +2,7 @@
 
 Match the idea to the closest row and say which in one line. Rows marked
 **proven** were built as sample apps on the Avatar API and run in live
-sessions on staging; the `build-avatar-app` skill carries the recipe for each
+sessions; the `build-avatar-app` skill carries the recipe for each
 app shape and the starter they were built from.
 
 ## Avatars on atmee.ai (no code)
@@ -37,7 +37,7 @@ the same time fight over it.
 ## Mini-apps: the avatar hosts an app
 
 The avatar runs an app with the user and acts on it through tools. Fourteen
-were built on the Avatar API and run on staging:
+were built on the Avatar API and run in live sessions:
 
 - **Games:** guess the city from a postcard, a chess opponent who explains
   her moves, heads-up poker against an avatar whose cards the server hides

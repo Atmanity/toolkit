@@ -31,7 +31,7 @@ if ! printf '%s' "$authority" | grep -Eq '^[A-Za-z0-9.-]+(:[0-9]+)?$'; then
 fi
 host="${authority%%:*}"
 case "$host" in
-  ggoqouojrqloyyhuboob.supabase.co | fpgwbdmvvurxnanvxjld.supabase.co) ;; # staging, production
+  ggoqouojrqloyyhuboob.supabase.co | fpgwbdmvvurxnanvxjld.supabase.co) ;; # Atmee's two storage projects
   *) die "not an upload link from atmee.ai: $host" ;;
 esac
 path="/${url#https://"$authority"/}"

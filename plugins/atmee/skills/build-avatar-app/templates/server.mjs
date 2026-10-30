@@ -6,7 +6,7 @@
 //
 //   ATMEE_API_KEY    an Avatar API key with the `sessions` scope; server-side only
 //   AVATAR_ID        the avatar the app talks to (readyToChat, v2)
-//   ATMEE_BASE_URL   default https://staging.atmanity.us
+//   ATMEE_BASE_URL   default https://api.atmanity.us
 //   MAX_SECONDS      longest session to ask for, default 300
 //   APP_TOOLS_FILE   optional: a JSON file { "instructions": "...", "tools": [...] }, such as app-tools.example.json:
 //                    the app tools every session declares (avatar-room.js answers them)
@@ -19,7 +19,7 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 
-const BASE = process.env.ATMEE_BASE_URL || 'https://staging.atmanity.us';
+const BASE = process.env.ATMEE_BASE_URL || 'https://api.atmanity.us';
 const KEY = process.env.ATMEE_API_KEY;
 const AVATAR_ID = process.env.AVATAR_ID;
 const MAX_SECONDS = Number(process.env.MAX_SECONDS || 300);

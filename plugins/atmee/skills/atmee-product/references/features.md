@@ -65,8 +65,7 @@ agent tooling.
 
 Docs: `https://www.atmee.ai/docs/api`. A backend sends `X-Api-Key` (the API
 refuses browser calls); the CLI and the MCP servers act as a signed-in user
-instead. Production `https://api.atmanity.us`, staging
-`https://staging.atmanity.us`; a key works in one of them only.
+instead. The API is at `https://api.atmanity.us`.
 
 - **Conversations** (`POST /v1/session`): Atmee runs speech recognition, the
   persona and model, the voice and the video. The answer comes once the

@@ -47,7 +47,7 @@ invalid_conductor`, `/graph/nodes/2/edges/0/when: ...`); fix that field. The
 ## Shapes that worked
 
 A screening interview: one step per topic, each staying until its condition
-holds (condensed from a recruiter app that ran on staging).
+holds (condensed from a recruiter sample app).
 
 ```json
 {

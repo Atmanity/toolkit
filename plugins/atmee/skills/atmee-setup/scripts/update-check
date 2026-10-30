@@ -10,7 +10,7 @@
 # and exit 0. Each lookup is cut at ATMEE_UPDATE_TIMEOUT seconds (default 6).
 set -u
 
-PINNED="0.10.4" # x-release-please-version
+PINNED="0.10.5" # x-release-please-version
 
 here="$(cd "$(dirname "$0")" && pwd -P)"
 repo="Atmanity/toolkit"
@@ -122,15 +122,13 @@ check_skills() {
   fi
 }
 
-# The CLI ships as a binary with each release, under the same version.
+# The CLI's source ships with each release, tagged cli/vX.Y.Z, so go install
+# records the same version.
 check_cli() {
   local bin ver install
-  # While the repo is members-only, only a signed-in gh can fetch the script.
-  if [ -n "$public" ]; then
-    install="curl -fsSL https://raw.githubusercontent.com/$repo/main/install.sh | sh"
-  else
-    install="gh api repos/$repo/contents/install.sh -H 'Accept: application/vnd.github.raw' | sh"
-  fi
+  install="go install github.com/$repo/cli/cmd/atmee@latest"
+  # While the repo is members-only, Go fetches it with git and the gh sign-in.
+  [ -n "$public" ] || install="gh auth setup-git && GOPRIVATE=github.com/$repo $install"
   bin="$(command -v atmee 2>/dev/null)"
   if [ -z "$bin" ]; then
     say info cli "not installed; only API keys and agendas from the shell need it: $install"
@@ -138,9 +136,9 @@ check_cli() {
   fi
   ver="$(quick atmee --version | awk '{ print $NF; exit }')"
   ver="${ver#v}"
+  # A release is X.Y.Z; a pseudo-version (0.0.0-2026...-abc) is a build from source.
   case "$ver" in
-    [0-9]*.[0-9]*.[0-9]*) ;;
-    *) say info cli "installed at $bin as a build from source (${ver:-no version}); update it where it was built"; return ;;
+    '' | *[!0-9.]*) say info cli "installed at $bin as a build from source (${ver:-no version}); update it where it was built"; return ;;
   esac
   if [ -z "$latest" ]; then
     say info cli "version $ver; could not reach GitHub to compare, skipped"

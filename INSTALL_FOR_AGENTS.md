@@ -265,7 +265,7 @@ Tell the person, in one or two lines, for example:
 |---|---|
 | `git ls-remote` or the marketplace add fails with "not found" or an auth error | The machine can't read the private repo. Give the access message from step 0. |
 | Claude Code lists the plugin but no atmee tools | Ask the person to type `/reload-plugins --force`, or to restart Claude Code if that doesn't help; if the tools are still missing, `/mcp` shows each server's status. |
-| Codex shows no atmee tools after a restart | Run `codex mcp list`. If `atmee-avatars` is missing, add it with the plugin's own address: `codex mcp add atmee-avatars --url https://staging.atmanity.us/mcp`. Then sign in as in step 3. |
+| Codex shows no atmee tools after a restart | Run `codex mcp list`. If `atmee-avatars` is missing, add it with the plugin's own address: `codex mcp add atmee-avatars --url https://api.atmanity.us/mcp`. Then sign in as in step 3. |
 | `npx skills` says Node.js is too old | Ask the person to install Node.js 22.20 or newer, or use the plugin route if their agent has one. |
 | `atmee-setup` says a newer plugin is out | Claude Code: `claude plugin marketplace update atmee`, then `claude plugin update atmee@atmee`, then the person types `/reload-plugins` (a restart works too). Codex: `codex plugin marketplace upgrade`, then `codex plugin add atmee@atmee`, then a restart. |
 

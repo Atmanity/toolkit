@@ -18,21 +18,19 @@ of it in one file with no packages; its two `/api` routes are what to port.
 Only a signed-in owner or admin of the account creates keys, and the secret
 exists once, in the answer to create or rotate. Get it straight into the
 backend's environment file so it never passes through the chat, with the
-`atmee` CLI. When `atmee --version` fails, install it (a single binary from
-the `Atmanity/toolkit` releases) and sign in against the server the plugin
-uses:
+`atmee` CLI. When `atmee --version` fails, install it with Go (its source is
+in `Atmanity/toolkit`) and sign in against the server the plugin uses:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Atmanity/toolkit/main/install.sh | sh
-# while Atmanity/toolkit is members-only (curl answers 404), with a signed-in gh:
-# gh api repos/Atmanity/toolkit/contents/install.sh -H 'Accept: application/vnd.github.raw' | sh
-export ATMEE_BASE_URL=https://staging.atmanity.us
+go install github.com/Atmanity/toolkit/cli/cmd/atmee@latest
+# while Atmanity/toolkit is members-only: gh auth setup-git once, then
+# GOPRIVATE=github.com/Atmanity/toolkit go install github.com/Atmanity/toolkit/cli/cmd/atmee@latest
+export ATMEE_BASE_URL=https://api.atmanity.us
 atmee login        # opens the browser; the same account as the avatar
 ```
 
-The CLI defaults to production, and a sign-in or key works only against the
-server it was made for, so keep `ATMEE_BASE_URL` set to staging in every shell
-that runs `atmee` (the skill's Environment section); `atmee whoami` names the
+A sign-in or key works only against the server it was made for, so keep
+`ATMEE_BASE_URL` set in every shell that runs `atmee` (the skill's Environment section); `atmee whoami` names the
 server. Then:
 
 ```bash
@@ -43,7 +41,7 @@ atmee keys create --name "<app name>" --avatar <avatarId> --spend-cap <credits> 
 rest of the backend's environment to the same file:
 
 ```bash
-ATMEE_BASE_URL=https://staging.atmanity.us
+ATMEE_BASE_URL=https://api.atmanity.us
 AVATAR_ID=<avatarId>
 ``` With
 only the MCP tools, `create_api_key` makes the key but withholds the secret:
@@ -75,7 +73,7 @@ Keep the key narrow:
 | `appTools` | `{ "instructions": "...", "tools": [...] }`: functions the avatar may call in this session (App tools, below) |
 
 `201` answers once the avatar is in the room: about 15 to 20 seconds in
-staging tests. The page should show that it is connecting meanwhile.
+our tests. The page should show that it is connecting meanwhile.
 
 | Response field | Use |
 |---|---|

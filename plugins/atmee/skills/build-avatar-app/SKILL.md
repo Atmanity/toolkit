@@ -35,7 +35,7 @@ answer (the order's status, the user's score).
 Build from the starter in `templates/`: `server.mjs` (the backend's two
 routes), `avatar-room.js` with `floor.mjs` (the page's half), `try.html` (a
 test page) and `app-tools.example.json` (two sample tools `try.html` answers).
-They were proven in live staging sessions, including the timing rules in
+They were proven in live sessions, including the timing rules in
 `references/room.md` that are easy to get wrong.
 
 ## Rules that always apply
@@ -64,7 +64,7 @@ They were proven in live staging sessions, including the timing rules in
    website pages (Studio, API keys, billing, …) are `links` on the avatar
    and on `get_account`: the `atmee-product` skill's Website pages.
 5. **Room messages, files, tools and agendas need Causeur**, the runtime
-   that serves v2 sessions on staging (the plugin's server). A session the
+   that serves v2 sessions on the plugin's server. A session the
    behavior module runs accepts tools and never calls them. Anywhere else,
    the live test below shows whether `state`, `event` and tool calls reach
    the app before you build on them.
@@ -75,27 +75,25 @@ They were proven in live staging sessions, including the timing rules in
 Ask the developer only what the code and the request can't tell you, in your
 question tool, your recommendation first.
 
-## Environment: staging only, for now
+## Environment
 
-The Avatar API and this plugin's server run on staging today, so every host
-the app, the CLI and your tests use is a staging one. Avatars, keys and
-sign-ins exist in one environment only: a staging key or avatar sent to
-production answers `401` or `404`. Use production (`https://api.atmanity.us`)
-only when the developer says so.
+Avatars, keys and sign-ins exist on one server only: a key or avatar sent to
+another answers `401` or `404`. Every host the app, the CLI and your tests use
+is the one below.
 
 | Variable | Value | Read by |
 |---|---|---|
-| `ATMEE_BASE_URL` | `https://staging.atmanity.us` | the app's backend (the starter defaults to it) and the `atmee` CLI, which defaults to **production**: export it before `atmee login` and every `atmee` command |
+| `ATMEE_BASE_URL` | `https://api.atmanity.us` | the app's backend (the starter defaults to it) and the `atmee` CLI: export it before `atmee login` and every `atmee` command |
 | `ATMEE_API_KEY` | written by `atmee keys create --out .env`, never typed or shown | the backend only |
 | `AVATAR_ID` | the avatar from step 1 | the backend |
 | `MAX_SECONDS`, `APP_TOOLS_FILE`, `PORT` | optional: 300, none, 3000 | the starter backend |
 
 When porting the backend, read `ATMEE_BASE_URL` from the environment like the
-starter does, with staging as the fallback, and put it in the developer's
+starter does, with that value as the fallback, and put it in the developer's
 `.env` (and `.env.example`) next to the key. The atmee MCP server is
-`https://staging.atmanity.us/mcp`. Website pages (chat, Studio, API keys) are
-the `links` the API returns, on `staging.taild36ab5.ts.net` (the team's
-tailnet); never build them from the API host, which serves no pages.
+`https://api.atmanity.us/mcp`. Website pages (chat, Studio, API keys) are
+the `links` the API returns; never build them from the API host, which serves
+no pages.
 
 ## Flow
 
@@ -177,7 +175,7 @@ with the CLI or `set_conductor` (`references/conductor.md`).
 
 ### 8. Prove it live
 
-Run the app (or `try.html` against the developer's backend) on staging and
+Run the app (or `try.html` against the developer's backend) and
 check each item in a real session:
 
 - [ ] The greeting's captions arrive and the avatar's video plays (or, for a

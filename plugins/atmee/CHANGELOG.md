@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.5 (2026-10-30)
+
+
+### Features
+
+* **cli:** open-source the CLI in toolkit, and point the public copy at production
+
 ## 0.10.4 (2026-10-30)
 
 

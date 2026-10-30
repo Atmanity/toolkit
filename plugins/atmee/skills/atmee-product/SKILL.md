@@ -26,7 +26,7 @@ digital twin), a brand's concierge, an expert, a teacher, a companion, a
 historical figure or an original character.
 
 The company was called Atmanity, and the name stays in infrastructure: the
-API hosts (`api.atmanity.us`, `staging.atmanity.us`), the GitHub organisation
+API host (`api.atmanity.us`), the GitHub organisation
 and some ids. In anything a person reads, say Atmee.
 
 ## The surfaces
@@ -51,10 +51,8 @@ avatar, give `links.chat` from `get_avatar`: it carries the avatar's
 language.
 
 Only when a response has no `links` (a server that predates them), build
-the link: `https://<host><path>`, where `<host>` is `www.atmee.ai`, or
-`staging.taild36ab5.ts.net` (the team's tailnet only) for avatars made
-through the plugin's servers (Staging is not atmee.ai, below); never an API
-host such as `staging.atmanity.us`, which serves no website pages.
+the link: `https://<host><path>`, where `<host>` is `www.atmee.ai`; never an
+API host, which serves no website pages.
 
 | They ask for | Path |
 |---|---|
@@ -108,7 +106,7 @@ always its chat page: never start a session for it (`start_session`,
   `build-avatar-app`'s limits.
 - **One conversation at a time per avatar,** one user in it. More users at
   once need more avatars.
-- **The conversation runtime.** v2 conversations on staging run on Causeur,
+- **The conversation runtime.** v2 conversations on the plugin's servers run on Causeur,
   which gives apps their controls: room messages (`state`, `event`, typed
   turns), app tools (the avatar calls the app) and agendas (a conductor graph
   of steps). A session the older behavior module runs accepts tools and
@@ -191,11 +189,6 @@ Credits, buckets, what costs what, spend caps, sponsoring and earnings:
    avatar in health, law or money informs and points to a professional.
 3. **Public only on request,** after the creator approves the title,
    description and tags.
-4. **Staging is not atmee.ai.** The plugin's servers are the release
-   candidate on staging (`https://staging.atmanity.us`): avatars, keys and
-   credits made through them live there, apart from production atmee.ai
-   (`https://api.atmanity.us`). A key works in one environment only. Say
-   which one whenever you hand something over.
 
 ## References
 

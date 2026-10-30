@@ -11,4 +11,4 @@ dependencies:
       value: 'atmee'
       description: 'Atmee avatars, voices, uploads and live calls'
       transport: 'streamable_http'
-      url: 'https://staging.atmanity.us/mcp'
+      url: 'https://api.atmanity.us/mcp'

@@ -9,8 +9,8 @@
 - 5. Broadcast host
 - Tools in any shape
 
-Five shapes, each built as a sample app on the Avatar API and run on
-staging. Pick the closest, say which in one line, and build to its recipe;
+Five shapes, each built as a sample app on the Avatar API and run in
+live sessions. Pick the closest, say which in one line, and build to its recipe;
 most apps are one of these or two combined. Each also meets the limits in
 SKILL.md's "Current limits"; **Expect** names the one that bites it.
 

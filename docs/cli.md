@@ -1,7 +1,7 @@
 # CLI Reference
 
-`atmee` is a single Go binary, released for macOS, Linux and Windows with the
-plugin. Avatar commands use the
+`atmee` is a single Go binary, released with the plugin as source that
+`go install` builds. Avatar commands use the
 public Avatar API as a signed-in user (`atmee login`) or with an API key. To install it
 and get started, see the [README](../README.md#install). For building an app around an
 avatar (sessions, app tools, agendas), see the `build-avatar-app` skill's
@@ -12,7 +12,7 @@ avatar (sessions, app tools, agendas), see the `build-avatar-app` skill's
 
 | Variable | Default | Used by |
 |---|---|---|
-| `ATMEE_BASE_URL` | `https://api.atmanity.us` (staging `https://staging.atmanity.us`, local mock `http://localhost:8091`) | every command that calls the API, and `atmee login` |
+| `ATMEE_BASE_URL` | `https://api.atmanity.us` (local mock `http://localhost:8091`) | every command that calls the API, and `atmee login` |
 | `ATMEE_API_KEY` | the key saved by `atmee login --api-key` | every command that calls the API |
 | `ATMEE_ACCOUNT_ID` | the account chosen with `atmee login --account` | a signed-in user who belongs to several accounts |
 | `ATMEE_HOME` | `~/.atmee` | where the saved sign-in or key lives |
