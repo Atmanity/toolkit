@@ -55,7 +55,8 @@ Local files go up in the create or replace request itself, so the CLI does not u
 
 ```bash
 atmee balance [--json]         # credits left on your account
-atmee account [--json]         # plan, limits, prices per minute, capture quota, payout status
+atmee account [--json]         # plan, limits, prices per minute, capture quota, payout status, v2 access
+atmee redeem CODE [--json]     # redeem an invite or credit code (needs atmee login, not an API key)
 ```
 
 Both work for a signed-in user, and for a key with `sessions` or `avatars:read` (an

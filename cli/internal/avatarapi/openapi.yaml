@@ -3617,6 +3617,75 @@ paths:
         '409':
           $ref: '#/components/responses/AccountAmbiguous'
 
+  /v1/account/redeem:
+    post:
+      tags: [Account]
+      summary: Redeem an invite or credit code
+      description: |
+        Redeems a code for the account, as Creator Studio's Billing page
+        does. A code can add credits, let the account into v2 avatars (v2
+        is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+        the answer says what it gave and where v2 access stands after it.
+        Each account redeems a code at most once.
+
+        Only a signed-in user may redeem (the MCP server's sign-in, or
+        `atmee login`); an API key gets 403 `login_required`, so a leaked
+        key cannot spend the account's codes. Once v2 is let in, v2 creates
+        work on the next request.
+      operationId: redeemAccountCode
+      security:
+        - userToken: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemCodeRequest'
+      responses:
+        '200':
+          description: The code was redeemed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeRedemption'
+        '400':
+          description: invalid_body (not JSON)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '401':
+          description: Missing or invalid API key -- or a user token that is invalid, anonymous, or of a user who may act for no account (invalid_login)
+        '403':
+          description: login_required (an API key; only a signed-in user redeems) | redeem_forbidden (the user may not redeem for this account) | account_not_allowed (a user token whose X-Account-Id names an account the user may not act for)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: invalid_code (no such code, or it was switched off)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: |
+            code_expired | code_fully_redeemed (no uses left) |
+            already_redeemed (this account used it) | own_code_not_redeemable
+            (a creator's own code) | v2_access_already_granted (a code that
+            only gives v2, and the account has it) -- or account_ambiguous
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '503':
+          description: redeem_unavailable (this instance cannot redeem codes)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
   /v1/api_keys/current:
     get:
       tags: [Account]
@@ -7034,6 +7103,30 @@ components:
             Studio (`links.billing`). Use `engine: v1` meanwhile.
             `unavailable`: v2 is not offered on this server. Absent when it
             could not be determined.
+
+    RedeemCodeRequest:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: The code, as given (case and surrounding spaces do not matter).
+
+    CodeRedemption:
+      type: object
+      required: [microcreditsGranted]
+      properties:
+        microcreditsGranted:
+          type: integer
+          format: int64
+          description: Credits the code added, in microcredits (100 = 1 credit); 0 for a code that only gives v2 access.
+        v2Access:
+          type: string
+          enum: [granted, invite_required, unavailable]
+          description: The account's v2 access after redeeming, as `GET /v1/account` reports it. Absent when it could not be read.
 
     AccountLinks:
       type: object

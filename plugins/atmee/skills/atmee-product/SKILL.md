@@ -81,7 +81,8 @@ always its chat page: never start a session for it (`start_session`,
 - **Two engines.** v1 animates a talking head from one portrait: sharp and
   cheaper, and the engine the public API docs describe. v2 adds emotion,
   expression and motion; it is invite-only for now. An account gets it from
-  an invite code redeemed in Creator Studio (Billing) or an email invite
+  an invite code (the agent redeems it with `redeem_code`, `atmee redeem CODE`
+  in a terminal, or Creator Studio's Billing page) or an email invite
   (waitlist: `https://www.atmee.ai/v2signup`); `get_account`'s `v2Access`
   says whether it has it. A v2 avatar is captured several times;
   each capture is a **seed** (the server says candidate or take, and the

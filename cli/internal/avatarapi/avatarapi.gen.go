@@ -20,19 +20,19 @@ import (
 
 // Defines values for AccountV2Access.
 const (
-	Granted        AccountV2Access = "granted"
-	InviteRequired AccountV2Access = "invite_required"
-	Unavailable    AccountV2Access = "unavailable"
+	AccountV2AccessGranted        AccountV2Access = "granted"
+	AccountV2AccessInviteRequired AccountV2Access = "invite_required"
+	AccountV2AccessUnavailable    AccountV2Access = "unavailable"
 )
 
 // Valid indicates whether the value is a known member of the AccountV2Access enum.
 func (e AccountV2Access) Valid() bool {
 	switch e {
-	case Granted:
+	case AccountV2AccessGranted:
 		return true
-	case InviteRequired:
+	case AccountV2AccessInviteRequired:
 		return true
-	case Unavailable:
+	case AccountV2AccessUnavailable:
 		return true
 	default:
 		return false
@@ -1056,6 +1056,27 @@ func (e CandidateListResponseSeedSelection) Valid() bool {
 	case CandidateListResponseSeedSelectionAuto:
 		return true
 	case CandidateListResponseSeedSelectionManual:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CodeRedemptionV2Access.
+const (
+	CodeRedemptionV2AccessGranted        CodeRedemptionV2Access = "granted"
+	CodeRedemptionV2AccessInviteRequired CodeRedemptionV2Access = "invite_required"
+	CodeRedemptionV2AccessUnavailable    CodeRedemptionV2Access = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the CodeRedemptionV2Access enum.
+func (e CodeRedemptionV2Access) Valid() bool {
+	switch e {
+	case CodeRedemptionV2AccessGranted:
+		return true
+	case CodeRedemptionV2AccessInviteRequired:
+		return true
+	case CodeRedemptionV2AccessUnavailable:
 		return true
 	default:
 		return false
@@ -3026,6 +3047,18 @@ type CaptureQuota struct {
 	PendingLimit int `json:"pendingLimit"`
 }
 
+// CodeRedemption defines model for CodeRedemption.
+type CodeRedemption struct {
+	// MicrocreditsGranted Credits the code added, in microcredits (100 = 1 credit); 0 for a code that only gives v2 access.
+	MicrocreditsGranted int64 `json:"microcreditsGranted"`
+
+	// V2Access The account's v2 access after redeeming, as `GET /v1/account` reports it. Absent when it could not be read.
+	V2Access *CodeRedemptionV2Access `json:"v2Access,omitempty"`
+}
+
+// CodeRedemptionV2Access The account's v2 access after redeeming, as `GET /v1/account` reports it. Absent when it could not be read.
+type CodeRedemptionV2Access string
+
 // Conductor defines model for Conductor.
 type Conductor struct {
 	AvatarId openapi_types.UUID `json:"avatarId"`
@@ -3391,6 +3424,12 @@ type RateLimitedResponseError string
 // RateLimitedResponseReason `pending_cap`: 10 captures are already queued or running.
 type RateLimitedResponseReason string
 
+// RedeemCodeRequest defines model for RedeemCodeRequest.
+type RedeemCodeRequest struct {
+	// Code The code, as given (case and surrounding spaces do not matter).
+	Code string `json:"code"`
+}
+
 // RenderResolution A frame size in pixels for the v2 renderer: width and height are each
 // a multiple of 32 from 256 to 1024, and width x height is at most
 // 262,144 (512 x 512); a larger frame is `400 invalid_manifest` on an
@@ -3717,6 +3756,9 @@ type CreateSpeechSession422JSONResponseBody struct {
 	union json.RawMessage
 }
 
+// RedeemAccountCodeJSONRequestBody defines body for RedeemAccountCode for application/json ContentType.
+type RedeemAccountCodeJSONRequestBody = RedeemCodeRequest
+
 // CreateApiKeyJSONRequestBody defines body for CreateApiKey for application/json ContentType.
 type CreateApiKeyJSONRequestBody = ApiKeyCreateRequest
 
@@ -3962,6 +4004,42 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/account/balance (the `GetAccountBalance` operationId).
 	GetAccountBalance(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RedeemAccountCodeWithBody Redeem an invite or credit code
+	//
+	// Redeems a code for the account, as Creator Studio's Billing page
+	// does. A code can add credits, let the account into v2 avatars (v2
+	// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+	// the answer says what it gave and where v2 access stands after it.
+	// Each account redeems a code at most once.
+	//
+	// Only a signed-in user may redeem (the MCP server's sign-in, or
+	// `atmee login`); an API key gets 403 `login_required`, so a leaked
+	// key cannot spend the account's codes. Once v2 is let in, v2 creates
+	// work on the next request.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+	RedeemAccountCodeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RedeemAccountCode Redeem an invite or credit code
+	//
+	// Redeems a code for the account, as Creator Studio's Billing page
+	// does. A code can add credits, let the account into v2 avatars (v2
+	// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+	// the answer says what it gave and where v2 access stands after it.
+	// Each account redeems a code at most once.
+	//
+	// Only a signed-in user may redeem (the MCP server's sign-in, or
+	// `atmee login`); an API key gets 403 `login_required`, so a leaked
+	// key cannot spend the account's codes. Once v2 is let in, v2 creates
+	// work on the next request.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+	RedeemAccountCode(ctx context.Context, body RedeemAccountCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListApiKeys List the account's API keys (signed-in user only)
 	//
@@ -5444,6 +5522,62 @@ func (c *Client) GetAccount(ctx context.Context, reqEditors ...RequestEditorFn) 
 // Corresponds with GET /v1/account/balance (the `GetAccountBalance` operationId).
 func (c *Client) GetAccountBalance(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAccountBalanceRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RedeemAccountCodeWithBody Redeem an invite or credit code
+//
+// Redeems a code for the account, as Creator Studio's Billing page
+// does. A code can add credits, let the account into v2 avatars (v2
+// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+// the answer says what it gave and where v2 access stands after it.
+// Each account redeems a code at most once.
+//
+// Only a signed-in user may redeem (the MCP server's sign-in, or
+// `atmee login`); an API key gets 403 `login_required`, so a leaked
+// key cannot spend the account's codes. Once v2 is let in, v2 creates
+// work on the next request.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+func (c *Client) RedeemAccountCodeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRedeemAccountCodeRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RedeemAccountCode Redeem an invite or credit code
+//
+// Redeems a code for the account, as Creator Studio's Billing page
+// does. A code can add credits, let the account into v2 avatars (v2
+// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+// the answer says what it gave and where v2 access stands after it.
+// Each account redeems a code at most once.
+//
+// Only a signed-in user may redeem (the MCP server's sign-in, or
+// `atmee login`); an API key gets 403 `login_required`, so a leaked
+// key cannot spend the account's codes. Once v2 is let in, v2 creates
+// work on the next request.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+func (c *Client) RedeemAccountCode(ctx context.Context, body RedeemAccountCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRedeemAccountCodeRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -7451,6 +7585,46 @@ func NewGetAccountBalanceRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewRedeemAccountCodeRequest calls the generic RedeemAccountCode builder with application/json body
+func NewRedeemAccountCodeRequest(server string, body RedeemAccountCodeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRedeemAccountCodeRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRedeemAccountCodeRequestWithBody constructs an http.Request for the RedeemAccountCode method, with any body, and a specified content type
+func NewRedeemAccountCodeRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/account/redeem")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListApiKeysRequest constructs an http.Request for the ListApiKeys method
 func NewListApiKeysRequest(server string) (*http.Request, error) {
 	var err error
@@ -9033,6 +9207,42 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/account/balance (the `GetAccountBalance` operationId).
 	GetAccountBalanceWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccountBalanceResponse, error)
 
+	// RedeemAccountCodeWithBodyWithResponse Redeem an invite or credit code
+	//
+	// Redeems a code for the account, as Creator Studio's Billing page
+	// does. A code can add credits, let the account into v2 avatars (v2
+	// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+	// the answer says what it gave and where v2 access stands after it.
+	// Each account redeems a code at most once.
+	//
+	// Only a signed-in user may redeem (the MCP server's sign-in, or
+	// `atmee login`); an API key gets 403 `login_required`, so a leaked
+	// key cannot spend the account's codes. Once v2 is let in, v2 creates
+	// work on the next request.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+	RedeemAccountCodeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RedeemAccountCodeResponse, error)
+
+	// RedeemAccountCodeWithResponse Redeem an invite or credit code
+	//
+	// Redeems a code for the account, as Creator Studio's Billing page
+	// does. A code can add credits, let the account into v2 avatars (v2
+	// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+	// the answer says what it gave and where v2 access stands after it.
+	// Each account redeems a code at most once.
+	//
+	// Only a signed-in user may redeem (the MCP server's sign-in, or
+	// `atmee login`); an API key gets 403 `login_required`, so a leaked
+	// key cannot spend the account's codes. Once v2 is let in, v2 creates
+	// work on the next request.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+	RedeemAccountCodeWithResponse(ctx context.Context, body RedeemAccountCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*RedeemAccountCodeResponse, error)
+
 	// ListApiKeysWithResponse List the account's API keys (signed-in user only)
 	//
 	// Every API key of the account the user acts for, newest first,
@@ -10605,6 +10815,82 @@ func (r GetAccountBalanceResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetAccountBalanceResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RedeemAccountCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CodeRedemption
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ApiErrorResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ApiErrorResponse
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ApiErrorResponse
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ApiErrorResponse
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ApiErrorResponse
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RedeemAccountCodeResponse) GetJSON200() *CodeRedemption {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RedeemAccountCodeResponse) GetJSON400() *ApiErrorResponse {
+	return r.JSON400
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RedeemAccountCodeResponse) GetJSON403() *ApiErrorResponse {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RedeemAccountCodeResponse) GetJSON404() *ApiErrorResponse {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r RedeemAccountCodeResponse) GetJSON409() *ApiErrorResponse {
+	return r.JSON409
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r RedeemAccountCodeResponse) GetJSON503() *ApiErrorResponse {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r RedeemAccountCodeResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RedeemAccountCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RedeemAccountCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RedeemAccountCodeResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -12678,6 +12964,54 @@ func (c *ClientWithResponses) GetAccountBalanceWithResponse(ctx context.Context,
 	return ParseGetAccountBalanceResponse(rsp)
 }
 
+// RedeemAccountCodeWithBodyWithResponse Redeem an invite or credit code
+//
+// Redeems a code for the account, as Creator Studio's Billing page
+// does. A code can add credits, let the account into v2 avatars (v2
+// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+// the answer says what it gave and where v2 access stands after it.
+// Each account redeems a code at most once.
+//
+// Only a signed-in user may redeem (the MCP server's sign-in, or
+// `atmee login`); an API key gets 403 `login_required`, so a leaked
+// key cannot spend the account's codes. Once v2 is let in, v2 creates
+// work on the next request.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+func (c *ClientWithResponses) RedeemAccountCodeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RedeemAccountCodeResponse, error) {
+	rsp, err := c.RedeemAccountCodeWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRedeemAccountCodeResponse(rsp)
+}
+
+// RedeemAccountCodeWithResponse Redeem an invite or credit code
+//
+// Redeems a code for the account, as Creator Studio's Billing page
+// does. A code can add credits, let the account into v2 avatars (v2
+// is invite-only for now: `GET /v1/account`'s `v2Access`), or both;
+// the answer says what it gave and where v2 access stands after it.
+// Each account redeems a code at most once.
+//
+// Only a signed-in user may redeem (the MCP server's sign-in, or
+// `atmee login`); an API key gets 403 `login_required`, so a leaked
+// key cannot spend the account's codes. Once v2 is let in, v2 creates
+// work on the next request.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/account/redeem (the `RedeemAccountCode` operationId).
+func (c *ClientWithResponses) RedeemAccountCodeWithResponse(ctx context.Context, body RedeemAccountCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*RedeemAccountCodeResponse, error) {
+	rsp, err := c.RedeemAccountCode(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRedeemAccountCodeResponse(rsp)
+}
+
 // ListApiKeysWithResponse List the account's API keys (signed-in user only)
 //
 // Every API key of the account the user acts for, newest first,
@@ -14535,6 +14869,70 @@ func ParseGetAccountBalanceResponse(rsp *http.Response) (*GetAccountBalanceRespo
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRedeemAccountCodeResponse parses an HTTP response from a RedeemAccountCodeWithResponse call
+func ParseRedeemAccountCodeResponse(rsp *http.Response) (*RedeemAccountCodeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RedeemAccountCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CodeRedemption
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case rsp.StatusCode == 401:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 

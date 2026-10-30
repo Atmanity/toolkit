@@ -142,3 +142,39 @@ func TestBalanceNeedsAKey(t *testing.T) {
 		t.Fatalf("%d %s", code, errOut)
 	}
 }
+
+// redeem sends the code to POST /v1/account/redeem and says what it gave;
+// the API's refusal (an API key: login_required) is the error.
+func TestRedeem(t *testing.T) {
+	isolate(t)
+	t.Setenv("ATMEE_API_KEY", "sk_atmee_x")
+	var body map[string]any
+	status, answer := http.StatusOK, `{"microcreditsGranted":5000,"v2Access":"granted"}`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/v1/account/redeem" {
+			t.Errorf("unexpected %s %s", r.Method, r.URL.Path)
+		}
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(answer))
+	}))
+	t.Cleanup(srv.Close)
+	t.Setenv("ATMEE_BASE_URL", srv.URL)
+
+	out, errOut, code := run(t, "", "redeem", "V2-LAUNCH")
+	if code != 0 || body["code"] != "V2-LAUNCH" {
+		t.Fatalf("redeem: %d %s (sent %v)", code, errOut, body)
+	}
+	if !strings.Contains(out, "50.00 credits added") || !strings.Contains(out, "v2 avatars are open") {
+		t.Errorf("output: %q", out)
+	}
+	if out, _, _ := run(t, "", "redeem", "V2-LAUNCH", "--json"); !strings.Contains(out, `"microcreditsGranted": 5000`) {
+		t.Errorf("--json: %q", out)
+	}
+
+	status, answer = http.StatusForbidden, `{"error":"login_required","message":"codes are redeemed by a signed-in user"}`
+	if _, errOut, code := run(t, "", "redeem", "V2-LAUNCH"); code == 0 || !strings.Contains(errOut, "login_required") {
+		t.Errorf("API key: %d %q", code, errOut)
+	}
+}

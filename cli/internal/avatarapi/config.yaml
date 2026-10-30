@@ -35,6 +35,7 @@ output-options:
     - getAccountBalance
     - getAccount
     - getCurrentApiKey
+    - redeemAccountCode
     - listApiKeys
     - createApiKey
     - rotateApiKey

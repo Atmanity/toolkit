@@ -11,6 +11,7 @@ type (
 	Balance     = avatarapi.AccountBalance
 	Account     = avatarapi.Account
 	CurrentUser = avatarapi.CurrentCaller
+	Redemption  = avatarapi.CodeRedemption
 )
 
 // Balance is the account's credits: what a session can spend now, the
@@ -39,4 +40,15 @@ func (c *Client) CurrentKey(ctx context.Context) (*CurrentUser, error) {
 		return nil, err
 	}
 	return decode[CurrentUser](r.HTTPResponse, r.Body, err)
+}
+
+// Redeem redeems an invite or credit code for the account: credits, v2
+// access, or both. Only a signed-in user may; an API key gets 403
+// login_required.
+func (c *Client) Redeem(ctx context.Context, code string) (*Redemption, error) {
+	r, err := c.gen.RedeemAccountCodeWithResponse(ctx, avatarapi.RedeemCodeRequest{Code: code})
+	if r == nil {
+		return nil, err
+	}
+	return decode[Redemption](r.HTTPResponse, r.Body, err)
 }

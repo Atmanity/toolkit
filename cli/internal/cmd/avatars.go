@@ -770,7 +770,7 @@ func noV2Reason(acct *api.Account, err error) string {
 	switch string(*acct.V2Access) {
 	case "invite_required":
 		return "v2 avatars are invite-only for now and this account has not been let in; " +
-			"redeem an invite code in Creator Studio (Billing) to make v2"
+			"redeem an invite code with `atmee redeem CODE` (or in Creator Studio's Billing page) to make v2"
 	case "unavailable":
 		return "v2 avatars are not offered on this server"
 	}

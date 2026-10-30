@@ -132,7 +132,7 @@ Read these before anything else, and keep them for the whole conversation.
 
    From the other tools:
    - `account_ambiguous`: run setup's account question, then call again with the `accountId`.
-   - `v2_access_required`: v2 is invite-only for now and this account has not been let in. Say so, and ask: make the avatar with engine v1, or wait while they redeem an invite code in Creator Studio (`get_account`'s `links.billing`). Never switch to v1 without asking.
+   - `v2_access_required`: v2 is invite-only for now and this account has not been let in. Say so, and ask whether they have an invite code. With one: call `redeem_code` with exactly what they typed, then read its `v2Access` (when the answer has none, call `get_account` and read its `v2Access` instead): retry the same call only when it is `granted`. `invite_required` means the code gave no v2 access (a credits-only code): tell them the credits it added (`microcreditsGranted` is in hundredths of a credit), that it is not a v2 invite, and ask for an invite code or offer v1; do not retry v2. Without one: offer engine v1. Never switch to v1, and never invent or reuse a code, without asking. `redeem_code`'s own refusals: `invalid_code` (check the spelling with them), `code_expired` or `code_fully_redeemed` (that code is spent: ask for another or offer v1), `already_redeemed` (this account used it before), `login_required` (an API key is connected: redeem in Creator Studio's Billing page instead).
    - `rate_limited`: too many seeds are being made; wait the `Retry-After` it gives.
    - `avatar_busy`: a session is already live for this avatar; wait for it to end.
    - `preview_message_too_long`: shorten the preview line to 60 characters (code points) or fewer.

@@ -343,3 +343,46 @@ func (a *app) printCurrentKey(k *api.CurrentUser) {
 		a.printf("Key limits   %s\n", strings.Join(parts, " · "))
 	}
 }
+
+func (a *app) redeemCmd() *cobra.Command {
+	var jsonOut bool
+	c := &cobra.Command{
+		Use:   "redeem CODE",
+		Short: "Redeem an invite or credit code for the account.",
+		Long: "Redeems a code for your account, as Creator Studio's Billing page does. A code can add credits, " +
+			"open v2 avatars (invite-only for now), or both; each account redeems a code once. " +
+			"Needs `atmee login`: an API key cannot redeem codes.",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cl, err := a.api()
+			if err != nil {
+				return err
+			}
+			res, err := cl.Redeem(ctx(), args[0])
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				return a.printJSON(res)
+			}
+			parts := []string{}
+			if res.MicrocreditsGranted > 0 {
+				parts = append(parts, credits(res.MicrocreditsGranted)+" credits added")
+			}
+			if res.V2Access != nil {
+				parts = append(parts, map[string]string{
+					"granted":         "v2 avatars are open",
+					"invite_required": "v2 avatars are still invite-only for this account",
+					"unavailable":     "v2 avatars are not offered on this server",
+				}[string(*res.V2Access)])
+			}
+			if len(parts) == 0 {
+				parts = append(parts, "done")
+			}
+			a.printf("Redeemed %s: %s.\n", strings.TrimSpace(args[0]), strings.Join(parts, "; "))
+			return nil
+		},
+	}
+	c.Flags().BoolVar(&jsonOut, "json", false, "print the API's JSON")
+	return c
+}

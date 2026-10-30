@@ -106,7 +106,8 @@ Call `list_avatars` (the atmee avatars server; run `atmee-setup` if its tools
 are missing). The app needs one that is `ready`, `readyToChat`, engine `v2`.
 None fits: make one with the `create-avatar` skill first. v2 is invite-only for
 now: when `get_account`'s `v2Access` is `invite_required`, the account needs an
-invite code (redeemed in Creator Studio, `links.billing`) before it can make one.
+invite code before it can make one: ask the user for it and redeem it with
+`redeem_code`.
 
 The persona is the avatar's: it greets and introduces itself as it was made,
 whatever the app says. Per-app behaviour comes from `state` and the agenda; if

@@ -16,8 +16,9 @@ avatars server with:
 
 - **`engine`:** `v2`. Use v1 only if the creator asks, or when the account
   has no v2 access: v2 is invite-only for now, and `get_account`'s `v2Access`
-  is then `invite_required`. Tell the creator before making v1, and offer to
-  wait while they redeem an invite code in Creator Studio (`links.billing`).
+  is then `invite_required`. Ask the creator for an invite code first and
+  redeem it with `redeem_code`. Make v2 only once its answer (or, when it
+  has none, `get_account`) says `v2Access: granted`; make v1 only if they have no invite code and agree.
 - **`seedSelection`:** `auto`. The first seed that finishes goes live, so
   the avatar is ready without anyone choosing.
 - **`seedPreviews`:** `{"count": 1}`.

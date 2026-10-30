@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.7 (2026-10-30)
+
+
+### Features
+
+* **cli:** redeem invite codes from the CLI, and let agents ask for one when v2 is refused
+
 ## 0.10.6 (2026-10-30)
 
 
