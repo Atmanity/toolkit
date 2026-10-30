@@ -14,7 +14,10 @@ Step 1 creates the avatar from its name, portrait, voice and language alone,
 so the creator sees it talk before shaping its character. Create through the
 avatars server with:
 
-- **`engine`:** `v2`. Use v1 only if the creator asks.
+- **`engine`:** `v2`. Use v1 only if the creator asks, or when the account
+  has no v2 access: v2 is invite-only for now, and `get_account`'s `v2Access`
+  is then `invite_required`. Tell the creator before making v1, and offer to
+  wait while they redeem an invite code in Creator Studio (`links.billing`).
 - **`seedSelection`:** `auto`. The first seed that finishes goes live, so
   the avatar is ready without anyone choosing.
 - **`seedPreviews`:** `{"count": 1}`.

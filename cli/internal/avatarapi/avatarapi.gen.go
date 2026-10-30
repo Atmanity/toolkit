@@ -18,6 +18,27 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AccountV2Access.
+const (
+	Granted        AccountV2Access = "granted"
+	InviteRequired AccountV2Access = "invite_required"
+	Unavailable    AccountV2Access = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the AccountV2Access enum.
+func (e AccountV2Access) Valid() bool {
+	switch e {
+	case Granted:
+		return true
+	case InviteRequired:
+		return true
+	case Unavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AccountBalanceWallet.
 const (
 	Direct AccountBalanceWallet = "direct"
@@ -1315,7 +1336,27 @@ type Account struct {
 	Payouts *AccountPayouts `json:"payouts,omitempty"`
 	Plan    AccountPlan     `json:"plan"`
 	Pricing AccountPricing  `json:"pricing"`
+
+	// V2Access Whether this account may build v2 avatars (`engine: v2`).
+	// `granted`: it may. `invite_required`: v2 is invite-only for now
+	// and this account has not been let in; v2 creates, candidates,
+	// versions, the conductor and v2 rebuilds answer 403
+	// `v2_access_required` until it redeems an invite code in Creator
+	// Studio (`links.billing`). Use `engine: v1` meanwhile.
+	// `unavailable`: v2 is not offered on this server. Absent when it
+	// could not be determined.
+	V2Access *AccountV2Access `json:"v2Access,omitempty"`
 }
+
+// AccountV2Access Whether this account may build v2 avatars (`engine: v2`).
+// `granted`: it may. `invite_required`: v2 is invite-only for now
+// and this account has not been let in; v2 creates, candidates,
+// versions, the conductor and v2 rebuilds answer 403
+// `v2_access_required` until it redeems an invite code in Creator
+// Studio (`links.billing`). Use `engine: v1` meanwhile.
+// `unavailable`: v2 is not offered on this server. Absent when it
+// could not be determined.
+type AccountV2Access string
 
 // AccountBalance defines model for AccountBalance.
 type AccountBalance struct {

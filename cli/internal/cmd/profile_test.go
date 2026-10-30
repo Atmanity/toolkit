@@ -33,6 +33,10 @@ func profileAPI(t *testing.T, knowledge string, patch func(n int) (int, string))
 	var got []recorded
 	patches := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/account" { // the create's v2 access lookup
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		raw, _ := io.ReadAll(r.Body)
 		rec := recorded{Method: r.Method, Path: r.URL.Path, ContentType: r.Header.Get("Content-Type"), Raw: raw}
 		_ = json.Unmarshal(raw, &rec.Body)

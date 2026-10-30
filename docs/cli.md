@@ -173,7 +173,7 @@ while the take itself is good, try another with `atmee avatars update ID
 `avatars get` shows the one in use, and `--runtime-seed 42` goes back to the
 default. It is an API setting only: Creator Studio doesn't show it.
 
-`create` flags: `--engine v2|v1` (default v2), `--candidates 1-10`
+`create` flags: `--engine v2|v1` (default v2; v1 for an account without v2 access, which `atmee account` shows), `--candidates 1-10`
 (default 1 on v2), `--seed-selection auto|manual` (default auto on v2: the first candidate
 finished is used; both need `--image` and `--voice`, a v2 draft takes one candidate,
 used automatically, once completed), `--preview-message` (v2: at most 60

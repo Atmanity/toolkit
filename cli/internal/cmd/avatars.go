@@ -227,12 +227,25 @@ func (a *app) createCmd() *cobra.Command {
 			if len(persona) > 0 {
 				in.Persona = persona
 			}
+			cl, err := a.api()
+			if err != nil {
+				return err
+			}
 			// v2 is the default, with one candidate used as soon as it is
-			// finished, wherever the flags and --config chose nothing. A
-			// draft (no portrait or no voice yet) gets that from the API
-			// when it is completed, and takes no candidate options.
+			// finished, wherever the flags and --config chose nothing. An
+			// account without v2 (invite-only, or v2 not on this server) gets
+			// v1 instead, unless v2-only options were asked for. A draft (no
+			// portrait or no voice yet) gets the candidate options from the
+			// API when it is completed.
 			if in.Engine == "" {
 				in.Engine = "v2"
+				if why := noV2Reason(cl.Account(ctx())); why != "" {
+					if in.Candidates != 0 || in.SeedSelection != "" {
+						return fmt.Errorf("%s; --candidates and --seed-selection are for v2 avatars: drop them to make a v1 avatar", why)
+					}
+					in.Engine = "v1"
+					a.note("Making a v1 avatar: %s.\n", why)
+				}
 			}
 			complete := in.Image != "" && in.Voice != ""
 			if in.Engine == "v2" && complete && in.SeedSelection == "" {
@@ -240,10 +253,6 @@ func (a *app) createCmd() *cobra.Command {
 			}
 			if in.Engine == "v2" && complete && in.Candidates == 0 {
 				in.Candidates = 1
-			}
-			cl, err := a.api()
-			if err != nil {
-				return err
 			}
 			res, quota, err := cl.Create(ctx(), in)
 			if err != nil {
@@ -750,4 +759,20 @@ func download(link, path string) error {
 		return err
 	}
 	return os.Rename(f.Name(), path)
+}
+
+// noV2Reason is why the account cannot make v2 avatars, or "" when it can
+// or the account could not be read (the create then says so itself).
+func noV2Reason(acct *api.Account, err error) string {
+	if err != nil || acct.V2Access == nil {
+		return ""
+	}
+	switch string(*acct.V2Access) {
+	case "invite_required":
+		return "v2 avatars are invite-only for now and this account has not been let in; " +
+			"redeem an invite code in Creator Studio (Billing) to make v2"
+	case "unavailable":
+		return "v2 avatars are not offered on this server"
+	}
+	return ""
 }

@@ -173,6 +173,13 @@ func (a *app) printAccount(x *api.Account) {
 		return strconv.Itoa(*p)
 	}
 	a.printf("API access   %s\n", access)
+	if v := x.V2Access; v != nil {
+		a.printf("v2 avatars   %s\n", map[string]string{
+			"granted":         "yes",
+			"invite_required": "invite only: redeem an invite code in Creator Studio (Billing); creates default to v1",
+			"unavailable":     "not offered on this server",
+		}[string(*v)])
+	}
 	a.printf("Limits       session length %s · %s at once · %s API avatars\n", length, limit(l.MaxConcurrentSessions), limit(l.MaxApiAvatars))
 
 	pr := x.Pricing

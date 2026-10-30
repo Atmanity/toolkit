@@ -464,6 +464,10 @@ func TestRuntimeSeedFlag(t *testing.T) {
 	id := "11111111-2222-4333-8444-555555555555"
 	var got []map[string]any
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/account" { // the create's v2 access lookup
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		var body map[string]any
 		_ = json.NewDecoder(r.Body).Decode(&body)
 		got = append(got, body)
@@ -503,6 +507,10 @@ func TestRuntimeSeedFromConfig(t *testing.T) {
 	id := "11111111-2222-4333-8444-555555555555"
 	var got []map[string]any
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/account" { // the create's v2 access lookup
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		var body map[string]any
 		_ = json.NewDecoder(r.Body).Decode(&body)
 		got = append(got, body)
@@ -528,6 +536,10 @@ func TestSpokenNameAndKnownAliasFlags(t *testing.T) {
 	id := "11111111-2222-4333-8444-555555555555"
 	var got []map[string]any
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/account" { // the create's v2 access lookup
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		var body map[string]any
 		_ = json.NewDecoder(r.Body).Decode(&body)
 		got = append(got, body)
@@ -612,6 +624,62 @@ func TestHabitFlag(t *testing.T) {
 	}
 	if len(got) != 3 {
 		t.Fatalf("a bad --habit was sent: %v", got)
+	}
+}
+
+// A create that chooses no engine makes v1 for an account not let into v2
+// yet, and says so; an account with access gets v2; a chosen engine is
+// sent as is.
+func TestCreateEngineFollowsV2Access(t *testing.T) {
+	isolate(t)
+	t.Setenv("ATMEE_API_KEY", "sk_atmee_x")
+	aid := "11111111-2222-4333-8444-555555555555"
+	for _, tc := range []struct {
+		access string
+		args   []string
+		want   string
+		note   string // a line on stderr, "" for none
+		fails  string // the error, "" when the create succeeds
+	}{
+		{access: "invite_required", want: "", note: "invite-only"}, // v1, the API's default, is not sent
+		{access: "unavailable", want: "", note: "not offered on this server"},
+		{access: "invite_required", args: []string{"--seed-selection", "manual"}, fails: "drop them to make a v1 avatar"},
+		{access: "granted", want: "v2"},
+		{access: "", want: "v2"},
+		{access: "invite_required", args: []string{"--engine", "v2"}, want: "v2"},
+	} {
+		var got map[string]any
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodGet && r.URL.Path == "/v1/account" {
+				acct := `{"accountId":"a","plan":{},"limits":{},"pricing":{},"captureQuota":{"pending":0,"pendingLimit":1}`
+				if tc.access != "" {
+					acct += `,"v2Access":"` + tc.access + `"`
+				}
+				_, _ = w.Write([]byte(acct + "}"))
+				return
+			}
+			_ = json.NewDecoder(r.Body).Decode(&got)
+			w.WriteHeader(202)
+			_, _ = w.Write([]byte(`{"avatarId":"` + aid + `","kind":"conversational","status":"draft","missingInputs":["image","voice"],"statusUrl":"x"}`))
+		}))
+		t.Setenv("ATMEE_BASE_URL", srv.URL)
+		_, errOut, code := run(t, "", append([]string{"avatars", "create", "--name", "Ada"}, tc.args...)...)
+		srv.Close()
+		if tc.fails != "" {
+			if code == 0 || !strings.Contains(errOut, tc.fails) || got != nil {
+				t.Errorf("%+v: %d %s (sent %v)", tc, code, errOut, got)
+			}
+			continue
+		}
+		if code != 0 {
+			t.Fatalf("%+v: %d %s", tc, code, errOut)
+		}
+		if e, _ := got["engine"].(string); e != tc.want {
+			t.Errorf("%+v: engine %v, want %q", tc, got["engine"], tc.want)
+		}
+		if noted := strings.Contains(errOut, "Making a v1 avatar"); noted != (tc.note != "") || !strings.Contains(errOut, tc.note) {
+			t.Errorf("%+v: stderr %q", tc, errOut)
+		}
 	}
 }
 

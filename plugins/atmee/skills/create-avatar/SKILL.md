@@ -132,6 +132,7 @@ Read these before anything else, and keep them for the whole conversation.
 
    From the other tools:
    - `account_ambiguous`: run setup's account question, then call again with the `accountId`.
+   - `v2_access_required`: v2 is invite-only for now and this account has not been let in. Say so, and ask: make the avatar with engine v1, or wait while they redeem an invite code in Creator Studio (`get_account`'s `links.billing`). Never switch to v1 without asking.
    - `rate_limited`: too many seeds are being made; wait the `Retry-After` it gives.
    - `avatar_busy`: a session is already live for this avatar; wait for it to end.
    - `preview_message_too_long`: shorten the preview line to 60 characters (code points) or fewer.

@@ -80,12 +80,15 @@ always its chat page: never start a session for it (`start_session`,
   files. It speaks one language; a session can ask for another.
 - **Two engines.** v1 animates a talking head from one portrait: sharp and
   cheaper, and the engine the public API docs describe. v2 adds emotion,
-  expression and motion; it is in early access (sign-up:
-  `https://www.atmee.ai/v2signup`). A v2 avatar is captured several times;
+  expression and motion; it is invite-only for now. An account gets it from
+  an invite code redeemed in Creator Studio (Billing) or an email invite
+  (waitlist: `https://www.atmee.ai/v2signup`); `get_account`'s `v2Access`
+  says whether it has it. A v2 avatar is captured several times;
   each capture is a **seed** (the server says candidate or take, and the
   API's `seed` field is an informational number, not the clip) and the
-  creator picks the one that serves. Studio builds v1 avatars; v2 avatars come from the
-  Avatar API and the agent tooling, which is what `create-avatar` makes.
+  creator picks the one that serves. Studio, the Avatar API and the agent
+  tooling (`create-avatar`) build v2 for an account that has it, and v1 for
+  any account.
 - **Visibility:** private, unlisted (anyone with the link) or public (listed
   on atmee.ai). Through the API an avatar starts private or unlisted and
   goes public by an update once it is ready.

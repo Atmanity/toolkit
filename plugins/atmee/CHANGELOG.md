@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.6 (2026-10-30)
+
+
+### Features
+
+* **cli:** handle invite-only v2 in the CLI, skills and docs
+
 ## 0.10.5 (2026-10-30)
 
 
